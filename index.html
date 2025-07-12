@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avaliação de Histologia - Tecidos Fundamentais</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background-color: #6d28d9;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #5b21b6;
+        }
+        .option-btn {
+            border: 2px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        .option-btn:hover {
+            border-color: #6d28d9;
+            background-color: #f3e8ff;
+        }
+        .option-btn.selected {
+            border-color: #6d28d9;
+            background-color: #a78bfa;
+            color: white;
+        }
+        .option-btn.correct {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            color: white;
+        }
+        .option-btn.incorrect {
+            background-color: #dc2626;
+            border-color: #dc2626;
+            color: white;
+        }
+        .progress-bar-fill {
+            background-color: #8b5cf6;
+            transition: width 0.5s ease-in-out;
+        }
+        .histology-bg {
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            background-color: #f3e8ff;
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .test-select-btn {
+            transform: scale(1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .test-select-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen histology-bg p-4">
+
+    <div id="app-container" class="w-full max-w-2xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-6 text-gray-700">
+            <h1 class="text-2xl md:text-3xl font-bold text-purple-800">DISCIPLINA DE HISTOLOGIA</h1>
+            <h2 class="text-lg md:text-xl font-semibold text-purple-600">TECIDOS FUNDAMENTAIS</h2>
+            <p class="mt-1 text-md font-medium">PROF. DR. FÁBIO MARQUES</p>
+        </header>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="card p-8 md:p-12 text-center">
+            <img src="https://placehold.co/100x100/6d28d9/ffffff?text=H" alt="Ícone de Histologia" class="mx-auto mb-6 rounded-full">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Bem-vindo(a) à Avaliação!</h3>
+            <p class="text-gray-600 mb-6">Insira seus dados para continuar.</p>
+            <div class="space-y-4">
+                <input type="text" id="student-name" placeholder="Seu Nome Completo" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500">
+                <input type="text" id="student-id" placeholder="Sua Matrícula" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500">
+            </div>
+            <button id="start-btn" class="btn-primary w-full font-bold py-3 px-4 rounded-lg mt-8 text-lg">
+                Próximo
+            </button>
+            <p id="start-error" class="text-red-500 mt-4 h-4"></p>
+        </div>
+        
+        <!-- Test Selection Screen -->
+        <div id="test-selection-screen" class="card p-8 md:p-12 text-center hidden">
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Escolha a Avaliação</h3>
+            <p class="text-gray-600 mb-8">Selecione uma das provas abaixo para iniciar.</p>
+            <div class="grid md:grid-cols-3 gap-6">
+                <button onclick="startQuiz(1)" class="test-select-btn btn-primary font-bold py-6 px-4 rounded-lg text-lg">
+                    Prova 1
+                </button>
+                <button onclick="startQuiz(2)" class="test-select-btn btn-primary font-bold py-6 px-4 rounded-lg text-lg">
+                    Prova 2
+                </button>
+                <button onclick="startQuiz(3)" class="test-select-btn btn-primary font-bold py-6 px-4 rounded-lg text-lg">
+                    Prova 3
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="card p-8 md:p-10 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <div class="w-full bg-gray-200 rounded-full h-4 mr-4">
+                    <div id="progress-bar" class="bg-purple-600 h-4 rounded-full progress-bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="text-lg font-bold text-purple-700 whitespace-nowrap">
+                    Pontos: <span id="score">0</span>
+                </div>
+            </div>
+            <div id="question-container" class="mb-6">
+                <p class="text-lg font-semibold text-gray-500 mb-2">Questão <span id="question-number"></span> de <span id="total-questions"></span></p>
+                <h4 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800"></h4>
+            </div>
+            <div id="options-container" class="space-y-3"></div>
+            <textarea id="subjective-answer" class="w-full p-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-purple-500 hidden" rows="5" placeholder="Digite sua resposta aqui..."></textarea>
+            <button id="submit-btn" class="btn-primary w-full font-bold py-3 px-4 rounded-lg mt-8 text-lg">
+                Confirmar Resposta
+            </button>
+        </div>
+        
+        <!-- Feedback Modal -->
+        <div id="feedback-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop hidden">
+            <div class="card p-8 text-center max-w-sm w-full">
+                <p id="feedback-text" class="text-xl font-bold mb-4"></p>
+                <p id="motivational-text" class="text-gray-600 mb-6"></p>
+                <button id="next-question-btn" class="btn-primary w-full font-bold py-3 px-4 rounded-lg">
+                    Próxima Questão
+                </button>
+            </div>
+        </div>
+
+        <!-- Final Screen -->
+        <div id="final-screen" class="card p-8 md:p-10 hidden">
+            <h3 class="text-3xl font-bold text-center text-gray-800 mb-2">Avaliação Concluída!</h3>
+            <p id="final-message" class="text-center text-gray-600 mb-6">Confira seu desempenho na <span class="font-bold"></span>.</p>
+            <div class="bg-purple-100 p-6 rounded-2xl text-center mb-6">
+                <p class="text-lg text-purple-800">Sua Pontuação Final</p>
+                <p id="final-score" class="text-5xl font-bold text-purple-700"></p>
+            </div>
+            <div class="text-center mb-8">
+                <button id="whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg inline-flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.383 1.803 6.166l-1.225 4.485 4.574-1.196z"/></svg>
+                    Enviar Resultado ao Professor
+                </button>
+            </div>
+            <div id="gabarito-container" class="mt-6">
+                <h4 class="text-2xl font-bold text-center text-gray-800 mb-4">Gabarito Detalhado</h4>
+            </div>
+             <p class="text-center text-sm text-gray-500 mt-8">Copyright © Prof. Fábio Marques</p>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const allQuizzes = {
+            prova1: [
+                { type: 'subjective', question: "Qual é a importância da etapa de fixação no processamento histológico e o que seria observado ao microscópio em um tecido não fixado adequadamente?", explanation: "A fixação é crucial no processamento histológico pois preserva a morfologia celular e tecidual, impedindo a autólise (degradação por enzimas celulares) e a putrefação (degradação bacteriana). Sem fixação adequada, um tecido sofreria rápida deterioração estrutural, com dissolução de membranas, desintegração de organelas e perda da arquitetura tecidual. Ao microscópio, observaríamos artefatos, distorções morfológicas e perda de afinidade tintorial, impossibilitando a identificação de estruturas celulares e comprometendo o diagnóstico histopatológico." },
+                { type: 'subjective', question: "Descreva a estrutura e a função das microvilosidades no epitélio do intestino delgado, explicando como elas otimizam o processo de absorção.", explanation: "As microvilosidades são projeções citoplasmáticas digitiformes na superfície apical dos enterócitos. Sua função primordial é ampliar a área de superfície absortiva (em até 30x), maximizando o contato com o quimo, aumentando a densidade de transportadores e enzimas, e otimizando a absorção de nutrientes." },
+                { type: 'subjective', question: "Descreva os principais componentes do tecido conjuntivo frouxo e como eles contribuem para suas funções biológicas.", explanation: "Componentes: Células (fibroblastos, macrófagos, mastócitos, etc.) e Matriz Extracelular (substância fundamental e fibras colágenas, elásticas, reticulares). Funções: suporte flexível, nutrição, defesa imunológica, reserva hídrica e cicatrização." },
+                { type: 'multiple_choice', question: "O tecido conjuntivo denso não modelado é caracterizado por:", options: ["Fibras colágenas organizadas paralelamente", "Fibras irregulares e resistência a forças em várias direções", "Presença exclusiva de fibras elásticas", "Presença de abundantes adipócitos"], answer: "Fibras irregulares e resistência a forças em várias direções", explanation: "Este tecido possui feixes de fibras colágenas espessas e entrelaçadas em múltiplas direções, conferindo resistência mecânica a tensões aplicadas em diferentes eixos." },
+                { type: 'multiple_choice', question: "A observação de epitélio respiratório pseudostratificado ciliado sugere origem de qual local?", options: ["Intestino delgado", "Traqueia", "Epiderme", "Esôfago"], answer: "Traqueia", explanation: "O epitélio respiratório pseudostratificado ciliado é característico das vias aéreas superiores, como a traqueia e brônquios, adaptado para a limpeza e proteção dessas vias." },
+                { type: 'multiple_choice', question: "Durante o processamento histológico de rotina, em qual etapa os lipídios celulares podem ser perdidos?", options: ["Fixação com glutaraldeído", "Inclusão em resina epóxi", "Desidratação com álcool", "Coloração com hematoxilina"], answer: "Desidratação com álcool", explanation: "Os lipídios são perdidos na desidratação, pois o álcool atua como solvente orgânico, dissolvendo-os. Para visualizá-los, são necessárias técnicas especiais como cortes por congelação." },
+                { type: 'multiple_choice', question: "Uma das funções principais do epitélio estratificado pavimentoso queratinizado é:", options: ["Absorção", "Transporte de muco", "Proteção contra atrito e desidratação", "Secreção ativa"], answer: "Proteção contra atrito e desidratação", explanation: "Encontrado na epiderme, sua estrutura com múltiplas camadas e o estrato córneo com queratina formam uma barreira física resistente contra agressões mecânicas e perda de água." },
+                { type: 'multiple_choice', question: "As fibras reticulares são compostas predominantemente por:", options: ["Elastina", "Colágeno tipo III", "Glicoproteínas adesivas", "Colágeno tipo I"], answer: "Colágeno tipo III", explanation: "As fibras reticulares são formadas por colágeno tipo III (reticulina), criando redes delicadas que sustentam órgãos como baço, linfonodos e medula óssea." },
+                { type: 'multiple_choice', question: "O epitélio escamoso simples tem como principal função:", options: ["Secreção", "Proteção contra atrito", "Transporte de muco", "Permitir troca de substâncias por difusão"], answer: "Permitir troca de substâncias por difusão", explanation: "Sua morfologia com uma única camada de células achatadas minimiza a distância para a passagem de moléculas, sendo ideal para trocas gasosas (alvéolos) e filtração (rins)." },
+                { type: 'multiple_choice', question: "Durante uma reação alérgica, qual célula do conjuntivo se degranula liberando histamina?", options: ["Macrófago", "Plasmócito", "Mastócito", "Neutrófilo"], answer: "Mastócito", explanation: "Na reação alérgica (hipersensibilidade tipo I), a ligação do alérgeno a anticorpos IgE na superfície dos mastócitos desencadeia a degranulação e liberação de histamina." }
+            ],
+            prova2: [
+                { type: 'multiple_choice', question: "O objetivo principal da fixação do tecido é:", options: ["Realçar a coloração", "Preservar a estrutura celular", "Facilitar a desidratação", "Permitir a inclusão em parafina"], answer: "Preservar a estrutura celular", explanation: "A fixação visa preservar a estrutura celular e tecidual o mais próximo possível do estado in vivo, interrompendo a degradação e mantendo a arquitetura para análise." },
+                { type: 'multiple_choice', question: "Qual estrutura aumenta a superfície de absorção no intestino delgado?", options: ["Cílios", "Microvilosidades", "Estereocílios", "Flagelos"], answer: "Microvilosidades", explanation: "As microvilosidades formam a 'borda em escova' na superfície dos enterócitos, aumentando a área de superfície absortiva em até 30 vezes para otimizar a absorção de nutrientes." },
+                { type: 'multiple_choice', question: "O tecido conjuntivo frouxo:", options: ["Apresenta poucas células e fibras densamente organizadas", "É predominante nos tendões", "Possui abundante substância fundamental e células", "É avascular"], answer: "Possui abundante substância fundamental e células", explanation: "Este tecido caracteriza-se pela abundância de substância fundamental, diversidade celular (fibroblastos, macrófagos, etc.) e uma disposição frouxa de fibras. É altamente vascularizado." },
+                { type: 'subjective', question: "Relacione a organização das fibras colágenas no tecido conjuntivo denso não modelado com sua função estrutural.", explanation: "Os feixes de colágeno (tipo I) são espessos, entrelaçados e dispostos em múltiplas direções. Essa arquitetura irregular permite que o tecido resista eficientemente a tensões aplicadas em diferentes eixos, conferindo resistência multidirecional, ideal para a derme e cápsulas de órgãos." },
+                { type: 'subjective', question: "Descreva as características histológicas do epitélio pseudostratificado ciliado e sua função protetora nas vias respiratórias.", explanation: "Características: parece estratificado mas todas as células tocam a membrana basal; possui células ciliadas, caliciformes (produzem muco) e basais. Função: o sistema mucociliar aprisiona partículas no muco, que é movido pelos cílios para fora das vias aéreas, limpando o sistema respiratório." },
+                { type: 'subjective', question: "Explique por que os lipídios geralmente não são observados em lâminas histológicas comuns e quais técnicas são necessárias para sua visualização.", explanation: "Lipídios são dissolvidos e extraídos durante a etapa de desidratação com álcool no processamento de rotina. Para preservá-los, são necessárias técnicas especiais como cortes de congelação (criostato) e colorações específicas para lipídios (Sudan Black, Oil Red O)." },
+                { type: 'subjective', question: "Como a estrutura do epitélio estratificado pavimentoso queratinizado contribui para a proteção mecânica e a prevenção da perda de água?", explanation: "A proteção é garantida pela: 1) Estratificação (múltiplas camadas); 2) Queratinização (camada córnea resistente); 3) Matriz lipídica intercelular (barreira impermeável à água); 4) Descamação contínua para reparo." },
+                { type: 'multiple_choice', question: "As fibras reticulares são compostas por:", options: ["Elastina", "Colágeno tipo III", "Glicoproteínas adesivas", "Colágeno tipo I"], answer: "Colágeno tipo III", explanation: "As fibras reticulares são formadas por colágeno tipo III (reticulina), criando redes delicadas que sustentam órgãos como baço, linfonodos e medula óssea." },
+                { type: 'multiple_choice', question: "O epitélio escamoso simples tem como principal função:", options: ["Secreção", "Proteção contra atrito", "Transporte de muco", "Permitir troca de substâncias por difusão"], answer: "Permitir troca de substâncias por difusão", explanation: "Sua morfologia com uma única camada de células achatadas minimiza a distância para a passagem de moléculas, sendo ideal para trocas gasosas (alvéolos) e filtração (rins)." },
+                { type: 'multiple_choice', question: "Durante uma reação alérgica, qual célula do conjuntivo se degranula liberando histamina?", options: ["Macrófago", "Plasmócito", "Mastócito", "Neutrófilo"], answer: "Mastócito", explanation: "Na reação alérgica (hipersensibilidade tipo I), a ligação do alérgeno a anticorpos IgE na superfície dos mastócitos desencadeia a degranulação e liberação de histamina." }
+            ],
+            prova3: [
+                { type: 'multiple_choice', question: "O objetivo principal da fixação do tecido é:", options: ["Realçar a coloração", "Preservar a estrutura celular", "Facilitar a desidratação", "Permitir a inclusão em parafina"], answer: "Preservar a estrutura celular", explanation: "A fixação visa preservar a estrutura celular e tecidual o mais próximo possível do estado in vivo, interrompendo a degradação e mantendo a arquitetura para análise." },
+                { type: 'multiple_choice', question: "Qual estrutura aumenta a superfície de absorção no intestino delgado?", options: ["Cílios", "Microvilosidades", "Estereocílios", "Flagelos"], answer: "Microvilosidades", explanation: "As microvilosidades formam a 'borda em escova' na superfície dos enterócitos, aumentando a área de superfície absortiva em até 30 vezes para otimizar a absorção de nutrientes." },
+                { type: 'multiple_choice', question: "O tecido conjuntivo frouxo:", options: ["Apresenta poucas células e fibras densamente organizadas", "É predominante nos tendões", "Possui abundante substância fundamental e células", "É avascular"], answer: "Possui abundante substância fundamental e células", explanation: "Este tecido caracteriza-se pela abundância de substância fundamental, diversidade celular (fibroblastos, macrófagos, etc.) e uma disposição frouxa de fibras. É altamente vascularizado." },
+                { type: 'multiple_choice', question: "O tecido conjuntivo denso não modelado é caracterizado por:", options: ["Fibras colágenas organizadas paralelamente", "Fibras irregulares e resistência a forças em várias direções", "Presença exclusiva de fibras elásticas", "Presença de abundantes adipócitos"], answer: "Fibras irregulares e resistência a forças em várias direções", explanation: "Este tecido possui feixes de fibras colágenas espessas e entrelaçadas em múltiplas direções, conferindo resistência mecânica a tensões aplicadas em diferentes eixos." },
+                { type: 'multiple_choice', question: "A observação de epitélio respiratório pseudostratificado ciliado sugere origem de qual local?", options: ["Intestino delgado", "Traqueia", "Epiderme", "Esôfago"], answer: "Traqueia", explanation: "O epitélio respiratório pseudostratificado ciliado é característico das vias aéreas superiores, como a traqueia e brônquios, adaptado para a limpeza e proteção dessas vias." },
+                { type: 'multiple_choice', question: "Em qual etapa os lipídios celulares podem ser perdidos durante o processamento histológico?", options: ["Fixação com glutaraldeído", "Inclusão em resina epóxi", "Desidratação com álcool", "Coloração com hematoxilina"], answer: "Desidratação com álcool", explanation: "Os lipídios são perdidos na desidratação, pois o álcool atua como solvente orgânico, dissolvendo-os. Para visualizá-los, são necessárias técnicas especiais como cortes por congelação." },
+                { type: 'multiple_choice', question: "Uma das funções principais do epitélio estratificado pavimentoso queratinizado é:", options: ["Absorção", "Transporte de muco", "Proteção contra atrito e desidratação", "Secreção ativa"], answer: "Proteção contra atrito e desidratação", explanation: "Encontrado na epiderme, sua estrutura com múltiplas camadas e o estrato córneo com queratina formam uma barreira física resistente contra agressões mecânicas e perda de água." },
+                { type: 'subjective', question: "Descreva a composição e a função das fibras reticulares, destacando sua importância no arcabouço de órgãos linfáticos e hematopoiéticos.", explanation: "Compostas por colágeno tipo III, formam redes delicadas que sustentam as células de órgãos como baço, linfonodos e medula óssea. Elas criam um microambiente que organiza o parênquima, permitindo o trânsito e a interação celular, essencial para a função imune e hematopoiética." },
+                { type: 'subjective', question: "Explique por que o epitélio pavimentoso simples é ideal para funções de difusão e filtração, citando exemplos de locais onde é encontrado.", explanation: "Sua espessura mínima, por ser uma camada única de células achatadas, reduz a distância de difusão. Isso facilita trocas rápidas e eficientes. É encontrado nos alvéolos pulmonares (troca de gases), na cápsula de Bowman dos rins (filtração) e no endotélio dos vasos sanguíneos." },
+                { type: 'subjective', question: "Descreva o papel central dos mastócitos nas reações alérgicas, incluindo o mecanismo de ativação e os efeitos da histamina liberada.", explanation: "Mastócitos possuem receptores para IgE. Na reexposição a um alérgeno, ocorre a degranulação com liberação de histamina. A histamina causa vasodilatação, aumento da permeabilidade vascular (edema), contração de músculo liso (broncoespasmo) e prurido, caracterizando a resposta alérgica." }
+            ]
+        };
+
+        const motivationalMessages = {
+            correct: ["Excelente! Você domina este assunto!", "Impressionante! Conhecimento afiado!", "Perfeito! Continue assim, futuro mestre da histologia!", "Mandou bem! Sua dedicação está clara!", "Isso mesmo! Você está no caminho certo!"],
+            incorrect: ["Não desanime! O erro é uma etapa do aprendizado.", "Continue estudando! A persistência leva à perfeição.", "Quase lá! Revise este ponto e tente a próxima.", "A jornada do conhecimento tem desafios. Você consegue!", "Cada questão é uma oportunidade de aprender. Siga em frente!"]
+        };
+
+        // --- DOM ELEMENTS ---
+        const startScreen = document.getElementById('start-screen');
+        const testSelectionScreen = document.getElementById('test-selection-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const finalScreen = document.getElementById('final-screen');
+        const feedbackModal = document.getElementById('feedback-modal');
+        const studentNameInput = document.getElementById('student-name');
+        const studentIdInput = document.getElementById('student-id');
+        const startBtn = document.getElementById('start-btn');
+        const startError = document.getElementById('start-error');
+        const progressBar = document.getElementById('progress-bar');
+        const scoreEl = document.getElementById('score');
+        const questionNumberEl = document.getElementById('question-number');
+        const totalQuestionsEl = document.getElementById('total-questions');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const subjectiveAnswerInput = document.getElementById('subjective-answer');
+        const submitBtn = document.getElementById('submit-btn');
+        const feedbackTextEl = document.getElementById('feedback-text');
+        const motivationalTextEl = document.getElementById('motivational-text');
+        const nextQuestionBtn = document.getElementById('next-question-btn');
+        const finalScoreEl = document.getElementById('final-score');
+        const finalMessageEl = document.querySelector('#final-message span');
+        const whatsappBtn = document.getElementById('whatsapp-btn');
+        const gabaritoContainer = document.getElementById('gabarito-container');
+
+        // --- STATE ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let studentName = '';
+        let studentId = '';
+        let userAnswers = [];
+        let selectedQuizData = [];
+        let selectedTestName = '';
+
+        // --- FUNCTIONS ---
+        function handleStart() {
+            studentName = studentNameInput.value.trim();
+            studentId = studentIdInput.value.trim();
+            if (!studentName || !studentId) {
+                startError.textContent = 'Por favor, preencha todos os campos.';
+                return;
+            }
+            startError.textContent = '';
+            startScreen.classList.add('hidden');
+            testSelectionScreen.classList.remove('hidden');
+        }
+
+        function startQuiz(testNumber) {
+            selectedTestName = `Prova ${testNumber}`;
+            selectedQuizData = allQuizzes[`prova${testNumber}`];
+            
+            testSelectionScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            totalQuestionsEl.textContent = selectedQuizData.length;
+            displayQuestion();
+        }
+
+        function displayQuestion() {
+            optionsContainer.innerHTML = '';
+            subjectiveAnswerInput.value = '';
+            subjectiveAnswerInput.classList.add('hidden');
+            submitBtn.disabled = false;
+            
+            const currentQuestion = selectedQuizData[currentQuestionIndex];
+            const progress = ((currentQuestionIndex) / selectedQuizData.length) * 100;
+            
+            progressBar.style.width = `${progress}%`;
+            questionNumberEl.textContent = currentQuestionIndex + 1;
+            questionTextEl.textContent = currentQuestion.question;
+
+            if (currentQuestion.type === 'multiple_choice') {
+                currentQuestion.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.classList.add('w-full', 'p-4', 'text-left', 'rounded-lg', 'font-semibold', 'option-btn');
+                    button.onclick = () => selectOption(button);
+                    optionsContainer.appendChild(button);
+                });
+            } else {
+                subjectiveAnswerInput.classList.remove('hidden');
+            }
+        }
+
+        function selectOption(selectedButton) {
+            document.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('selected'));
+            selectedButton.classList.add('selected');
+        }
+
+        function handleSubmit() {
+            const currentQuestion = selectedQuizData[currentQuestionIndex];
+            let userAnswer;
+            let isCorrect = false;
+
+            if (currentQuestion.type === 'multiple_choice') {
+                const selectedOption = document.querySelector('.option-btn.selected');
+                if (!selectedOption) {
+                    alert('Por favor, selecione uma opção.');
+                    return;
+                }
+                userAnswer = selectedOption.textContent;
+                isCorrect = userAnswer === currentQuestion.answer;
+                
+                document.querySelectorAll('.option-btn').forEach(btn => {
+                    btn.disabled = true;
+                    if (btn.textContent === currentQuestion.answer) {
+                        btn.classList.add('correct');
+                    } else if (btn.classList.contains('selected')) {
+                        btn.classList.add('incorrect');
+                    }
+                });
+            } else {
+                userAnswer = subjectiveAnswerInput.value.trim();
+                if (!userAnswer) {
+                    alert('Por favor, digite sua resposta.');
+                    return;
+                }
+                isCorrect = true; 
+            }
+            
+            userAnswers.push({
+                question: currentQuestion.question,
+                answer: userAnswer,
+                correctAnswer: currentQuestion.type === 'multiple_choice' ? currentQuestion.answer : currentQuestion.explanation,
+                isCorrect: isCorrect
+            });
+
+            if (isCorrect) {
+                score += 10;
+                scoreEl.textContent = score;
+            }
+            
+            submitBtn.disabled = true;
+            setTimeout(() => showFeedback(isCorrect), 1200);
+        }
+        
+        function showFeedback(isCorrect) {
+            const messages = isCorrect ? motivationalMessages.correct : motivationalMessages.incorrect;
+            feedbackTextEl.textContent = isCorrect ? "Resposta Correta!" : "Quase lá...";
+            motivationalTextEl.textContent = messages[Math.floor(Math.random() * messages.length)];
+            
+            if (currentQuestionIndex === selectedQuizData.length - 1) {
+                nextQuestionBtn.textContent = 'Ver Resultado Final';
+            } else {
+                nextQuestionBtn.textContent = 'Próxima Questão';
+            }
+            
+            feedbackModal.classList.remove('hidden');
+        }
+
+        function handleNext() {
+            feedbackModal.classList.add('hidden');
+            currentQuestionIndex++;
+            if (currentQuestionIndex < selectedQuizData.length) {
+                displayQuestion();
+            } else {
+                showFinalScreen();
+            }
+        }
+
+        function showFinalScreen() {
+            quizScreen.classList.add('hidden');
+            finalScreen.classList.remove('hidden');
+            finalScoreEl.textContent = score;
+            finalMessageEl.textContent = selectedTestName;
+            progressBar.style.width = `100%`;
+            buildGabarito();
+        }
+
+        function buildGabarito() {
+            gabaritoContainer.innerHTML = '';
+            userAnswers.forEach((answer, index) => {
+                const questionData = selectedQuizData[index];
+                const item = document.createElement('div');
+                item.classList.add('p-4', 'mb-4', 'border', 'rounded-lg');
+                
+                const isCorrect = answer.isCorrect;
+                item.style.borderColor = isCorrect ? '#4ade80' : '#f87171';
+                item.style.backgroundColor = isCorrect ? '#f0fdf4' : '#fef2f2';
+
+                let content = `<p class="font-bold text-lg mb-2">Questão ${index + 1}: ${answer.question}</p>`;
+                if (questionData.type === 'multiple_choice') {
+                     content += `<p class="text-sm">Sua resposta: <span class="font-semibold ${isCorrect ? 'text-green-700' : 'text-red-700'}">${answer.answer}</span></p>
+                                 <p class="text-sm">Resposta correta: <span class="font-semibold text-green-700">${answer.correctAnswer}</span></p>`;
+                } else {
+                    content += `<p class="text-sm">Sua resposta: <span class="font-semibold text-blue-700">${answer.answer}</span></p>`;
+                }
+                content += `<p class="text-sm mt-2 pt-2 border-t border-gray-300"><b>Explicação:</b> ${questionData.explanation}</p>`;
+                
+                item.innerHTML = content;
+                gabaritoContainer.appendChild(item);
+            });
+        }
+
+        function sendWhatsApp() {
+            const professorPhone = '5584994420139';
+            let message = `*Avaliação de Histologia Concluída*\n\n`;
+            message += `*Prova:* ${selectedTestName}\n`;
+            message += `*Aluno(a):* ${studentName}\n`;
+            message += `*Matrícula:* ${studentId}\n`;
+            message += `*Pontuação:* ${score} de ${selectedQuizData.length * 10}\n\n`;
+            message += `*--- Respostas ---*\n\n`;
+
+            userAnswers.forEach((answer, index) => {
+                message += `*Q${index + 1}:* ${answer.question}\n`;
+                message += `*R:* ${answer.answer}\n\n`;
+            });
+
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${professorPhone}?text=${encodedMessage}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        // --- EVENT LISTENERS ---
+        startBtn.addEventListener('click', handleStart);
+        submitBtn.addEventListener('click', handleSubmit);
+        nextQuestionBtn.addEventListener('click', handleNext);
+        whatsappBtn.addEventListener('click', sendWhatsApp);
+    </script>
+</body>
+</html>
