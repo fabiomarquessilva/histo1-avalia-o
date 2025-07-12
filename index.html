@@ -152,13 +152,13 @@
                 <p class="text-lg text-purple-800">Sua Pontuação Final</p>
                 <p id="final-score" class="text-5xl font-bold text-purple-700"></p>
             </div>
-            <div class="text-center mb-8">
+            <div id="send-result-container" class="text-center mb-8">
                 <button id="whatsapp-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg inline-flex items-center">
                     <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.383 1.803 6.166l-1.225 4.485 4.574-1.196z"/></svg>
                     Enviar Resultado ao Professor
                 </button>
             </div>
-            <div id="gabarito-container" class="mt-6">
+            <div id="gabarito-container" class="mt-6 hidden">
                 <h4 class="text-2xl font-bold text-center text-gray-800 mb-4">Gabarito Detalhado</h4>
             </div>
              <p class="text-center text-sm text-gray-500 mt-8">Copyright © Prof. Fábio Marques</p>
@@ -234,6 +234,7 @@
         const nextQuestionBtn = document.getElementById('next-question-btn');
         const finalScoreEl = document.getElementById('final-score');
         const finalMessageEl = document.querySelector('#final-message span');
+        const sendResultContainer = document.getElementById('send-result-container');
         const whatsappBtn = document.getElementById('whatsapp-btn');
         const gabaritoContainer = document.getElementById('gabarito-container');
 
@@ -377,7 +378,6 @@
             finalScoreEl.textContent = score;
             finalMessageEl.textContent = selectedTestName;
             progressBar.style.width = `100%`;
-            buildGabarito();
         }
 
         function buildGabarito() {
@@ -422,6 +422,20 @@
             const encodedMessage = encodeURIComponent(message);
             const whatsappUrl = `https://wa.me/${professorPhone}?text=${encodedMessage}`;
             window.open(whatsappUrl, '_blank');
+            
+            // Show gabarito AFTER sending the result
+            buildGabarito();
+            gabaritoContainer.classList.remove('hidden');
+
+            // Hide the button and show a confirmation message
+            whatsappBtn.classList.add('hidden');
+            if (!document.getElementById('sent-confirmation')) {
+                const sentMessage = document.createElement('p');
+                sentMessage.id = 'sent-confirmation';
+                sentMessage.textContent = 'Resultado enviado! Confira o gabarito detalhado abaixo.';
+                sentMessage.classList.add('text-center', 'text-green-700', 'font-bold');
+                sendResultContainer.insertBefore(sentMessage, whatsappBtn);
+            }
         }
 
         // --- EVENT LISTENERS ---
